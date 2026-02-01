@@ -1,0 +1,18 @@
+package com.arcturus.streamapi.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+
+@Configuration
+public class S3Config {
+
+    @Bean
+    public S3Client s3Client() {
+        // Isso garante que QUALQUER componente que use S3 saiba que a região é Virgínia
+        return S3Client.builder()
+                .region(Region.US_EAST_1)
+                .build();
+    }
+}

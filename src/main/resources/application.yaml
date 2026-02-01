@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: arcturus-stream-api
+
+  datasource:
+    # 🚀 CONFIGURAÇÃO HÍBRIDA (Nuvem / Local)
+    # No Render, ele vai ler as variáveis. No seu PC, usa o localhost.
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/arcturus_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:suasenha} # ⚠️ Confirme se sua senha local é 'suasenha' ou 'admin'
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  cloud:
+    aws:
+      credentials:
+        profile:
+          name: default
+      region:
+        static: us-east-1
+      s3:
+        region: us-east-1
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+logging:
+  level:
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: TRACE
+
+# --- Configurações Personalizadas do Arcturus ---
+aws:
+  region: us-east-1
+  s3:
+    # ☁️ Permite mudar o bucket via variável no futuro, se precisar
+    bucket: ${AWS_S3_BUCKET:arcturus-assets-sa-marianna}
+
+# --- Configurações de Terceiros ---
+jamendo:
+  client-id: ${JAMENDO_CLIENT_ID:22d88624}
+  url: https://api.jamendo.com/v3.0/tracks/
