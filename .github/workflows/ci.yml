@@ -22,8 +22,5 @@ jobs:
           cache: maven
 
 
-      - name: Dar permissão de execução ao Maven Wrapper
-        run: chmod +x mvnw
-
-      - name: Rodar Testes com Maven
-        run: ./mvnw test -DargLine="-XX:+EnableDynamicAgentLoading -Xshare:off"
+      - name: Rodar Testes com Maven Global
+        run: mvn test -DargLine="-XX:+EnableDynamicAgentLoading -Xshare:off"
