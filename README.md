@@ -1,98 +1,65 @@
 # 🌌 Arcturus Stream API
 
-> **Backend RESTful desenvolvido em Java e Spring Boot para a plataforma Arcturus Stream.**
+![Java CI](https://github.com/mariannacrocha/arcturus-api/actions/workflows/maven.yml/badge.svg)
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.4-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
 
-![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)
+API RESTful robusta desenvolvida para a plataforma de streaming de frequências vibracionais **Arcturus**. O sistema gerencia autenticação, upload de arquivos para nuvem (AWS S3) e integração com APIs externas de música.
 
----
+## 🚀 Tecnologias e Práticas
 
-## ⚙️ Sobre a API
+* **Core:** Java 21, Spring Boot 3.4.1
+* **Segurança:** Spring Security, JWT (JJWT), BCrypt Password Encoder.
+* **Banco de Dados:** PostgreSQL, Spring Data JPA.
+* **Cloud & Storage:** AWS SDK v2 (S3 Integration).
+* **Testes:** JUnit 5, Mockito, Spring Boot Test.
+* **DevOps:** Docker, Docker Compose, GitHub Actions (CI/CD Pipeline).
+* **Integração:** Consumo de API externa (Jamendo) com `java.net.http.HttpClient`.
 
-Este é o servidor responsável por toda a lógica de negócios, persistência de dados e integração com serviços externos (AWS S3 e Jamendo API) do projeto **Arcturus Stream**.
+## ⚙️ Arquitetura e Destaques
 
-A aplicação foi construída seguindo os princípios de **Clean Architecture** e **SOLID**, expondo endpoints REST seguros e otimizados para consumo pelo client Frontend.
+* **Security First:** Implementação de filtro de segurança customizado (`SecurityFilter`) para validação de Tokens Stateless.
+* **Hybrid Search:** O sistema busca conteúdos na biblioteca pessoal do usuário (Postgres) e complementa com resultados da API pública do Jamendo, filtrando duplicatas.
+* **CI/CD Pipeline:** Workflow automatizado no GitHub Actions que sobe contêineres Docker (Service Containers) para rodar testes de integração contra um banco PostgreSQL real a cada push.
 
-### 🔗 Integração
-O Frontend que consome esta API pode ser encontrado aqui: (https://github.com/mariannacrocha/arcturus-front)
-
----
-
-## 🛠 Tech Stack
-
-* **Linguagem:** Java 21
-* **Framework:** Spring Boot 3.4
-* **Build Tool:** Maven
-* **Database:** PostgreSQL (Cloud: Neon Tech)
-* **Storage:** AWS S3 (Amazon Simple Storage Service)
-* **Containerização:** Docker (Multi-stage build)
-* **Deploy:** Render
-
----
-
-## 🔌 Endpoints Principais
-
-| Método | Rota | Descrição |
-|---|---|---|
-| `GET` | `/v1/contents` | Lista todas as músicas salvas no banco de dados. |
-| `GET` | `/v1/contents/search?q={termo}` | Busca músicas na API externa (Jamendo) e formata para o padrão interno. |
-| `POST` | `/v1/contents` | Salva uma nova música na biblioteca pessoal (Banco + S3). |
-
----
-
-## 🚀 Como Rodar Localmente
+## 🛠️ Como Rodar Localmente
 
 ### Pré-requisitos
-* Java JDK 21
-* PostgreSQL (Local ou Docker)
+* Java 21+
+* Docker & Docker Compose
 * Maven
 
-### 1. Clone o repositório
-```bash
-git clone https://github.com/mariannacrocha/arcturus-api.git
-cd arcturus-api
-```
+### Passo a Passo
 
---- 
-### 2. Configure as Variáveis de Ambiente
-Você precisa configurar o acesso ao banco e à AWS no seu arquivo application.properties ou via variáveis de sistema:
+1. **Clone o repositório:**
+   ```bash
+   git clone [https://github.com/mariannacrocha/arcturus-api.git](https://github.com/mariannacrocha/arcturus-api.git)
+   ```
 
-# Exemplo de variáveis necessárias
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/arcturus_db
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=sua_senha
+Configure as Variáveis de Ambiente:
+Crie as variáveis no seu IDE ou no terminal (ou edite o application.yaml para dev):
+JWT_SECRET: Sua chave secreta para assinatura de tokens.
+AWS_ACCESS_KEY_ID: Chave AWS (ou mock para local).
+AWS_SECRET_ACCESS_KEY: Segredo AWS.
+AWS_S3_BUCKET: Nome do bucket S3.
+Suba o Banco de Dados (Docker):
+  ```bash
+docker-compose up -d
+  ```
 
-# Configuração AWS S3
-AWS_ACCESS_KEY=sua_chave_de_acesso
-AWS_SECRET_KEY=sua_chave_secreta
-AWS_REGION=us-east-1
-AWS_S3_BUCKET=seu-nome-do-bucket
-
----
-### 3. Execute a aplicação
-```bash
+Execute a aplicação:
+  ```bash
 ./mvnw spring-boot:run
-```
-O servidor iniciará em: http://localhost:8080
+  ```
 
----
-### ☁️ Arquitetura de Dados
-O fluxo de dados segue o padrão DTO (Data Transfer Object) para garantir que a estrutura interna do banco de dados não seja exposta diretamente na API.
+A API estará disponível em http://localhost:8080.
+🧪 Rodando os Testes
+O projeto possui testes unitários e de integração cobrindo Controllers, Services e Repositórios.
 
-```mermaid
-graph LR
-    A["Client Request"] --> B["Controller Layer"]
-    B --> C["Service Layer"]
-    C --> D{"Data Source?"}
-    D -- Externo --> E["Jamendo API"]
-    D -- Interno --> F["PostgreSQL Repository"]
-    D -- Arquivo --> G["AWS S3 Bucket"]
-```
----
-### 👩‍💻 Autora
+  ```bash
+./mvnw test
+  ```
 
-Desenvolvido por Marianna.
 
+Desenvolvido por Marianna Rocha
