@@ -9,12 +9,12 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // Libera para todas as rotas
+        registry.addMapping("/**")
                 .allowedOrigins(
-                        "https://arcturus-front.vercel.app", // Seu Frontend na Nuvem
-                        "http://localhost:4200"              // Seu Frontend Local (para testes futuros)
+                        "https://arcturus-front.vercel.app",
+                        "http://localhost:4200"
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Métodos permitidos
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }

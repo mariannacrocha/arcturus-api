@@ -20,7 +20,6 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
-    // Gera o Token quando o login é bem sucedido
     public String generateToken(User user) {
         return Jwts.builder()
                 .setSubject(user.getUsername()) // Salva o usuário dentro do token
@@ -31,7 +30,6 @@ public class TokenService {
                 .compact();
     }
 
-    // Valida se o token que chegou é autêntico
     public String validateToken(String token) {
         try {
             return Jwts.parserBuilder()
@@ -45,13 +43,11 @@ public class TokenService {
         }
     }
 
-    // Helper para transformar a String do properties em uma Chave Criptográfica
     private Key getSigningKey() {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // Define que o token vale por 2 horas
     private Date generateExpirationDate() {
         return Date.from(LocalDateTime.now().plusHours(2)
                 .atZone(ZoneId.systemDefault()).toInstant());

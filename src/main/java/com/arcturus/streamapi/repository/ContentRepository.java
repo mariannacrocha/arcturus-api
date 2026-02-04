@@ -12,10 +12,6 @@ import java.util.UUID;
 @Repository
 public interface ContentRepository extends JpaRepository<VibrationalContent, UUID> {
 
-    // Busca músicas pelo texto (Já existia)
-    List<VibrationalContent> findByDescriptionContainingIgnoreCaseOrEnergyTypeContainingIgnoreCase(String description, String energyType);
-
-    // 🚀 NOVO: Busca uma música específica, mas só se pertencer ao dono
     Optional<VibrationalContent> findByIdAndUser(UUID id, User user);
 
     List<VibrationalContent> findByUser(User user);

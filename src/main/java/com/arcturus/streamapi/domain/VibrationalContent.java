@@ -22,18 +22,16 @@ public class VibrationalContent {
 
     private String description;
 
-    @Column(name = "s3url", columnDefinition = "TEXT") // 🚀 ADICIONE ISSO
-    private String s3Url; // Novo campo para o link da AWS
+    @Column(name = "s3url", columnDefinition = "TEXT")
+    private String s3Url;
 
-    private LocalDateTime uploadDate; // Novo campo para a data/hora
+    private LocalDateTime uploadDate;
 
-    // Metadados Energéticos
     private Double frequencyHz;
 
     @Column(name = "energy_type")
-    private String energyType; // Ex: Arcturiano, Cura, Relaxamento
+    private String energyType;
 
-    // Referência para a AWS
     @Column(name = "s3_key", nullable = false)
     private String s3Key;
 

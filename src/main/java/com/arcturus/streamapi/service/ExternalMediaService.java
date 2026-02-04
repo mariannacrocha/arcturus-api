@@ -33,7 +33,6 @@ public class ExternalMediaService {
     @Value("${jamendo.url}")
     private String apiUrl;
 
-    // Regex para encontrar frequências comuns no meio do texto
     private static final Pattern FREQUENCY_PATTERN = Pattern.compile("\\b(174|285|396|417|432|440|528|639|741|852|963)\\b");
 
     private static final Map<String, String> DOMAIN_DICTIONARY = new HashMap<>();
@@ -87,7 +86,6 @@ public class ExternalMediaService {
         try {
             String encodedQuery = URLEncoder.encode(searchTerm, StandardCharsets.UTF_8);
 
-            // Inclui musicinfo para buscar nas tags
             String finalUrl = String.format("%s?client_id=%s&format=json&limit=10&boost=popularity_total&include=musicinfo&search=%s",
                     apiUrl, clientId, encodedQuery);
 
@@ -108,7 +106,6 @@ public class ExternalMediaService {
         return new ArrayList<>();
     }
 
-    // 🚀 ATUALIZADO: Retorna NULL se não achar nada
     private Double extractFrequencyFromMetadata(String title, JsonNode tagsNode) {
         StringBuilder textToScan = new StringBuilder(title);
 
@@ -124,7 +121,6 @@ public class ExternalMediaService {
             return Double.parseDouble(matcher.group(1));
         }
 
-        // Se não achou, retorna nulo (sem informação)
         return null;
     }
 
@@ -146,7 +142,6 @@ public class ExternalMediaService {
                     content.setS3Url(node.path("audio").asText());
                     content.setEnergyType("JAMENDO_REAL");
 
-                    // Pode setar NULL aqui, sem problemas
                     Double realFrequency = extractFrequencyFromMetadata(title, tags);
                     content.setFrequencyHz(realFrequency);
 

@@ -15,7 +15,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
-// 🚀 REMOVIDO O @CrossOrigin DAQUI (Agora o SecurityConfig manda em tudo)
 public class AuthenticationController {
 
     private final UserRepository repository;

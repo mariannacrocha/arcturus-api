@@ -10,7 +10,6 @@ public class S3Config {
 
     @Bean
     public S3Client s3Client() {
-        // Isso garante que QUALQUER componente que use S3 saiba que a região é Virgínia
         return S3Client.builder()
                 .region(Region.US_EAST_1)
                 .build();
