@@ -6,7 +6,7 @@ import com.arcturus.streamapi.dto.LoginResponse;
 import com.arcturus.streamapi.dto.RegisterRequest;
 import com.arcturus.streamapi.repository.UserRepository;
 import com.arcturus.streamapi.service.TokenService;
-import org.springframework.http.HttpStatus; // 👈 Importe isso
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:4200")
+// 🚀 REMOVIDO O @CrossOrigin DAQUI (Agora o SecurityConfig manda em tudo)
 public class AuthenticationController {
 
     private final UserRepository repository;
@@ -44,7 +44,7 @@ public class AuthenticationController {
 
         if (user.isEmpty()) {
             User newUser = new User();
-            newUser.setPassword(passwordEncoder.encode(body.password())); // A Criptografia acontece aqui!
+            newUser.setPassword(passwordEncoder.encode(body.password()));
             newUser.setUsername(body.username());
             newUser.setRole(body.role() != null ? body.role() : "USER");
 
@@ -53,7 +53,6 @@ public class AuthenticationController {
             return ResponseEntity.ok(new LoginResponse(token));
         }
 
-        // 🚀 MUDANÇA AQUI: Retorna 409 (Conflict) se já existe, facilitando pro Frontend
         return ResponseEntity.status(HttpStatus.CONFLICT).body("Usuário já existe");
     }
 }

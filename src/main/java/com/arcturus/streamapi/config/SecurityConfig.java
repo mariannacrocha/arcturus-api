@@ -13,9 +13,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration; // 👈 Importe isso
-import org.springframework.web.cors.CorsConfigurationSource; // 👈 Importe isso
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource; // 👈 Importe isso
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
@@ -32,35 +32,31 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 🚀 1. Habilita CORS Globalmente
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilita o CORS Global
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/v1/contents/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
-                        // Libera o OPTIONS para o navegador conseguir perguntar se pode entrar
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Importante para o navegador checar permissão
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
-    // 🚀 2. Configuração Detalhada do CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Permite apenas o seu Frontend
-        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        // 🚀 AQUI ESTÁ A CORREÇÃO: Adicionamos a Vercel na lista
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:4200",
+                "https://arcturus-front.vercel.app"
+        ));
 
-        // Permite todos os métodos (GET, POST, PUT, DELETE, OPTIONS)
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // Permite enviar cabeçalhos (como o Token e JSON)
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-
-        // Permite credenciais (se precisar no futuro)
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -77,5 +73,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }

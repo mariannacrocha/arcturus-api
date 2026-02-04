@@ -21,14 +21,12 @@ import java.util.stream.Stream;
 @RestController
 @RequestMapping("/v1/contents")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class ContentController {
 
     private final S3Service s3Service;
     private final ContentRepository contentRepository;
     private final ExternalMediaService externalMediaService;
 
-    // 1. Endpoint de Upload
     @PostMapping("/upload")
     public ResponseEntity<VibrationalContent> uploadContent(
             @RequestParam("file") MultipartFile file,
@@ -45,12 +43,11 @@ public class ContentController {
         content.setFrequencyHz((double) frequencyHz);
         content.setEnergyType(energyType);
         content.setS3Url(s3Url);
-        content.setUser(user); // Vincula ao usuário
+        content.setUser(user);
 
         return ResponseEntity.ok(contentRepository.save(content));
     }
 
-    // 2. Endpoint de Importar (Salvar)
     @PostMapping("/import")
     public ResponseEntity<VibrationalContent> importContent(
             @RequestBody ImportRequest request,
@@ -63,31 +60,24 @@ public class ContentController {
         content.setEnergyType(request.energyType());
         content.setFrequencyHz((double) request.frequencyHz());
         content.setS3Key("external-" + java.util.UUID.randomUUID().toString());
-        content.setUser(user); // Vincula ao usuário
+        content.setUser(user);
 
         VibrationalContent savedContent = contentRepository.save(content);
         return ResponseEntity.ok(savedContent);
     }
 
-    // 3. Endpoint de Listagem (Minha Biblioteca)
-    // 🚀 ALTERADO: Agora recebe o User e busca SÓ o que é dele
     @GetMapping
     public List<VibrationalContent> getAllContents(@AuthenticationPrincipal User user) {
         return contentRepository.findByUser(user);
     }
 
-    // 4. Endpoint de Busca Híbrida
-    // 🚀 ALTERADO: Agora filtra os resultados internos baseados no usuário
     @GetMapping("/search")
     public List<VibrationalContent> search(
             @RequestParam("q") String query,
-            @AuthenticationPrincipal User user) { // Recebe o usuário para filtrar corretamente
+            @AuthenticationPrincipal User user) {
 
         System.out.println("🔍 Buscando por: " + query);
 
-        // A. Busca Interna (No banco)
-        // ⚠️ Truque: Buscamos tudo do usuário primeiro e filtramos na memória
-        // (Para evitar criar querys complexas no Repository agora)
         List<VibrationalContent> myLibrary = contentRepository.findByUser(user);
 
         List<VibrationalContent> internalResults = myLibrary.stream()
@@ -95,10 +85,8 @@ public class ContentController {
                         || (c.getEnergyType() != null && c.getEnergyType().toLowerCase().contains(query.toLowerCase())))
                 .toList();
 
-        // B. Busca Externa (Jamendo)
         List<VibrationalContent> externalResults = externalMediaService.searchFreeMusic(query);
 
-        // C. Deduplicação (Remove do externo o que EU já tenho salvo)
         Set<String> mySavedUrls = myLibrary.stream()
                 .map(VibrationalContent::getS3Url)
                 .collect(Collectors.toSet());
@@ -107,12 +95,10 @@ public class ContentController {
                 .filter(music -> !mySavedUrls.contains(music.getS3Url()))
                 .toList();
 
-        // D. Une as listas
         return Stream.concat(internalResults.stream(), filteredExternal.stream())
                 .collect(Collectors.toList());
     }
 
-    // 5. Endpoint de Deletar
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteContent(
             @PathVariable UUID id,
