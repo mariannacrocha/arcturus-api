@@ -16,6 +16,7 @@ import java.text.Normalizer;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,20 +33,18 @@ public class ExternalMediaService {
     @Value("${jamendo.url}")
     private String apiUrl;
 
+    // Regex para encontrar frequências comuns no meio do texto
+    private static final Pattern FREQUENCY_PATTERN = Pattern.compile("\\b(174|285|396|417|432|440|528|639|741|852|963)\\b");
+
     private static final Map<String, String> DOMAIN_DICTIONARY = new HashMap<>();
 
     static {
-        // 🚀 MUDANÇA 1: Chaves SEM acento (Seguro contra erros de Windows/Linux)
         DOMAIN_DICTIONARY.put("meditacao", "meditation");
         DOMAIN_DICTIONARY.put("cura", "healing");
         DOMAIN_DICTIONARY.put("sono", "sleep");
         DOMAIN_DICTIONARY.put("frequencia", "frequency");
         DOMAIN_DICTIONARY.put("natureza", "nature");
         DOMAIN_DICTIONARY.put("relaxar", "relax");
-        DOMAIN_DICTIONARY.put("agua", "water");
-        DOMAIN_DICTIONARY.put("paz", "peace");
-        DOMAIN_DICTIONARY.put("amor", "love");
-        DOMAIN_DICTIONARY.put("floresta", "forest");
     }
 
     public ExternalMediaService(ObjectMapper objectMapper) {
@@ -56,7 +55,6 @@ public class ExternalMediaService {
                 .build();
     }
 
-    // 🚀 MUDANÇA 2: Método para remover acentos (Meditação -> meditacao)
     private String removeAccents(String value) {
         String normalizer = Normalizer.normalize(value, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
@@ -66,26 +64,20 @@ public class ExternalMediaService {
     public List<VibrationalContent> searchFreeMusic(String query) {
         if (query == null || query.isBlank()) return new ArrayList<>();
 
-        // Tratamento da entrada
         String termRaw = query.trim().toLowerCase();
-        String termNormalized = removeAccents(termRaw); // "meditação" vira "meditacao"
-
-        // Busca tradução no dicionário seguro
+        String termNormalized = removeAccents(termRaw);
         String termEn = DOMAIN_DICTIONARY.get(termNormalized);
 
-        System.out.println("🔎 Busca Iniciada | Original: " + termRaw + " | Normalizado: " + termNormalized + " | Tradução: " + termEn);
+        System.out.println("🔎 Busca Realista: " + termRaw);
 
-        // Dispara busca pelo termo original (PT)
         CompletableFuture<List<VibrationalContent>> searchPt = CompletableFuture.supplyAsync(() ->
                 fetchFromJamendo(termRaw)
         );
 
-        // Se houver tradução, dispara busca em Inglês em paralelo
         CompletableFuture<List<VibrationalContent>> searchEn = (termEn != null)
                 ? CompletableFuture.supplyAsync(() -> fetchFromJamendo(termEn))
                 : CompletableFuture.completedFuture(new ArrayList<>());
 
-        // Une os resultados
         return Stream.concat(searchPt.join().stream(), searchEn.join().stream())
                 .distinct()
                 .collect(Collectors.toList());
@@ -95,11 +87,9 @@ public class ExternalMediaService {
         try {
             String encodedQuery = URLEncoder.encode(searchTerm, StandardCharsets.UTF_8);
 
-            // 🚀 CORREÇÃO AQUI: Mudamos de 'popularity' para 'popularity_total'
-            String finalUrl = String.format("%s?client_id=%s&format=json&limit=10&boost=popularity_total&search=%s",
+            // Inclui musicinfo para buscar nas tags
+            String finalUrl = String.format("%s?client_id=%s&format=json&limit=10&boost=popularity_total&include=musicinfo&search=%s",
                     apiUrl, clientId, encodedQuery);
-
-            System.out.println("🔗 URL Corrigida: " + finalUrl);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(finalUrl))
@@ -110,14 +100,32 @@ public class ExternalMediaService {
 
             if (response.statusCode() == 200) {
                 return parseJamendoResponse(response.body());
-            } else {
-                System.err.println(" Erro Jamendo (" + response.statusCode() + "): " + response.body());
             }
 
         } catch (Exception e) {
             System.err.println(" Exceção Java: " + e.getMessage());
         }
         return new ArrayList<>();
+    }
+
+    // 🚀 ATUALIZADO: Retorna NULL se não achar nada
+    private Double extractFrequencyFromMetadata(String title, JsonNode tagsNode) {
+        StringBuilder textToScan = new StringBuilder(title);
+
+        if (tagsNode != null && tagsNode.isArray()) {
+            for (JsonNode tag : tagsNode) {
+                textToScan.append(" ").append(tag.asText());
+            }
+        }
+
+        Matcher matcher = FREQUENCY_PATTERN.matcher(textToScan.toString());
+
+        if (matcher.find()) {
+            return Double.parseDouble(matcher.group(1));
+        }
+
+        // Se não achou, retorna nulo (sem informação)
+        return null;
     }
 
     private List<VibrationalContent> parseJamendoResponse(String jsonBody) {
@@ -132,11 +140,15 @@ public class ExternalMediaService {
 
                     String title = node.path("name").asText("Sem Título");
                     String artist = node.path("artist_name").asText("Artista Desconhecido");
+                    JsonNode tags = node.path("musicinfo").path("tags");
 
                     content.setDescription(title + " - " + artist);
                     content.setS3Url(node.path("audio").asText());
                     content.setEnergyType("JAMENDO_REAL");
-                    content.setFrequencyHz(432.0);
+
+                    // Pode setar NULL aqui, sem problemas
+                    Double realFrequency = extractFrequencyFromMetadata(title, tags);
+                    content.setFrequencyHz(realFrequency);
 
                     if (!content.getS3Url().isEmpty()) {
                         resultList.add(content);

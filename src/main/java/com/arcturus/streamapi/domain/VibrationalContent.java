@@ -22,6 +22,7 @@ public class VibrationalContent {
 
     private String description;
 
+    @Column(name = "s3url", columnDefinition = "TEXT") // 🚀 ADICIONE ISSO
     private String s3Url; // Novo campo para o link da AWS
 
     private LocalDateTime uploadDate; // Novo campo para a data/hora
@@ -38,4 +39,10 @@ public class VibrationalContent {
 
     @Column(name = "content_type")
     private String contentType; // audio/mpeg, audio/wav
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+
 }
