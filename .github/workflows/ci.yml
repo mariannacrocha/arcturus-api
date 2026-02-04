@@ -1,13 +1,17 @@
-name: Java Backend CI
+name: Backend CI (Spring Boot)
 
 on:
   push:
     branches: [ "main", "master" ]
+    paths:
+      - 'src/main/**'
+      - 'src/test/**'
+      - 'pom.xml'
   pull_request:
     branches: [ "main", "master" ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +25,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Rodar Testes com Maven
+      - name: Rodar Testes Unitários
 
         run: ./mvnw test -DargLine="-XX:+EnableDynamicAgentLoading -Xshare:off"
