@@ -1,17 +1,13 @@
-name: Backend CI (Spring Boot)
+name: Java Backend CI
 
 on:
   push:
     branches: [ "main", "master" ]
-    paths:
-      - 'src/main/**' # Só roda se mexer no backend (ajuste se sua pasta for diferente)
-      - 'src/test/**'
-      - 'pom.xml'
   pull_request:
     branches: [ "main", "master" ]
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,6 +21,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Rodar Testes Unitários
-        # O comando inclui as flags para evitar warnings do Java 21
+      - name: Rodar Testes com Maven
+
         run: ./mvnw test -DargLine="-XX:+EnableDynamicAgentLoading -Xshare:off"
