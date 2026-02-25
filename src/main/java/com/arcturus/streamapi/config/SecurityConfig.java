@@ -51,7 +51,8 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:4200",
-                "https://arcturus-front.vercel.app"
+                "https://arcturus-front.vercel.app",
+                "http://137.131.167.234"
         ));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));

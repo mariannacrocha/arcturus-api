@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17-alpine
+    image: postgres:15-alpine
     container_name: arcturus-db
     restart: always
     environment:
@@ -11,6 +11,31 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M # 💡 Limite para o banco de dados não consumir toda a RAM
+
+  api:
+    build: .
+    container_name: arcturus-api
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/arcturus_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=sua_senha_segura
+      # Configurações JWT e AWS (Exemplos)
+      - JWT_SECRET=MinhaSenhaSuperSecretaDoArcturusProject123456
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    depends_on:
+      - db
+    deploy:
+      resources:
+        limits:
+          memory: 600M # 💡 Limite para a aplicação Java
 
 volumes:
   postgres_data:
