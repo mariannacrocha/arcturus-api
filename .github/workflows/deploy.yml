@@ -17,5 +17,5 @@ jobs:
           script: |
             cd ~/arcturus-project/arcturus-api
             git pull origin main
-            cd ..  
+            cd ..
             docker compose up -d --build api
