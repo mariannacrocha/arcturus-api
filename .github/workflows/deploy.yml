@@ -2,7 +2,7 @@ name: Deploy API to Oracle Cloud
 
 on:
   push:
-    branches: [ main ] # Dispara o deploy sempre que houver push na main
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -17,5 +17,5 @@ jobs:
           script: |
             cd ~/arcturus-project/arcturus-api
             git pull origin main
-            cd ..
-            docker-compose up -d --build api
+            cd ..  
+            docker compose up -d --build api
